@@ -1,0 +1,118 @@
+<html>
+<head>
+<script src="/c0.js"></script>
+<script src="/nuron.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.3/web3.min.js"></script>
+<script>
+var c0 = new C0()
+var nuron = new Nuron({
+  key: "m'/44'/60'/0'/0/0",
+  workspace: "web_test",
+  domain: {
+    "address":"0x93f4f1e0dca38dd0d35305d57c601f829ee53b51",
+    "chainId":4,
+    "name":"_test_"
+  }
+})
+const testFile = async (file) => {
+  console.log("file", file)
+  let c0cid = await c0.util.cid(file)
+  let nuroncid = await nuron.fs.write(file)
+  console.log(c0cid, nuroncid)
+  document.querySelector("#file .result").innerHTML = (c0cid === nuroncid)
+}
+const testBlob = async () => {
+  const array = ['<a id="a"><b id="b">hey!</b></a>']; // an array consisting of a single DOMString
+  const blob = new Blob(array, {type : 'text/html'}); // the blob
+  let c0cid = await c0.util.cid(blob)
+  let nuroncid = await nuron.fs.write(blob)
+  console.log(c0cid, nuroncid)
+  document.querySelector("#blob .result").innerHTML = (c0cid === nuroncid)
+}
+const testUint8Array = async (file) => {
+  let ua = await new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    reader.addEventListener("loadend", (e) => {
+      resolve(new Uint8Array(e.target.result))
+    })
+    reader.addEventListener("error", reject)
+    console.log("file", file)
+    reader.readAsArrayBuffer(file)
+  })
+
+  let c0cid = await c0.util.cid(ua)
+  let nuroncid = await nuron.fs.write(ua)
+  console.log(c0cid, nuroncid)
+  document.querySelector("#uint8array .result").innerHTML = (c0cid === nuroncid)
+}
+const testArrayBuffer = async (file) => {
+  let ab = await new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    reader.addEventListener("loadend", (e) => {
+      resolve(e.target.result)
+    })
+    reader.addEventListener("error", reject)
+    console.log("file", file)
+    reader.readAsArrayBuffer(file)
+  })
+  let c0cid = await c0.util.cid(ab)
+  let nuroncid = await nuron.fs.write(ab)
+  console.log(c0cid, nuroncid)
+  document.querySelector("#arraybuffer .result").innerHTML = (c0cid === nuroncid)
+}
+const testString = async () => {
+  let c0cid = await c0.util.cid("hello world")
+  let nuroncid = await nuron.fs.write("hello world")
+  console.log(c0cid, nuroncid)
+  document.querySelector("#string .result").innerHTML = (c0cid === nuroncid)
+}
+document.addEventListener("DOMContentLoaded", async () => {
+  await c0.init({ web3: new Web3(window.ethereum) })
+  document.querySelector("#file input").addEventListener("change", async (e) => {
+    await testFile(e.target.files[0])
+  })
+  document.querySelector("#blob button").addEventListener("click", async (e) => {
+    await testBlob()
+  })
+  document.querySelector("#uint8array input").addEventListener("change", async (e) => {
+    await testUint8Array(e.target.files[0])
+  })
+  document.querySelector("#arraybuffer input").addEventListener("change", async (e) => {
+    await testArrayBuffer(e.target.files[0])
+  })
+  document.querySelector("#string button").addEventListener("click", async (e) => {
+    await testString()
+  })
+})
+</script>
+</head>
+<body>
+<table>
+  <tr id='file'>
+    <td>Test file</td>
+    <td><input type='file'></td>
+    <td class='result'></td>
+  </tr>
+  <tr id='blob'>
+    <td>Test blob</td>
+    <td><button>test</button></td>
+    <td class='result'></td>
+  </tr>
+  <tr id='arraybuffer'>
+    <td>Test ArrayBuffer</td>
+    <td><input type='file'></td>
+    <td class='result'></td>
+  </tr>
+  <tr id='uint8array'>
+    <td>Test Uint8Array</td>
+    <td><input type='file'></td>
+    <td class='result'></td>
+  </tr>
+  <tr id='string'>
+    <td>Test string</td>
+    <td><button>test</button></td>
+    <td class='result'></td>
+  </tr>
+</table>
+</body>
+</html>

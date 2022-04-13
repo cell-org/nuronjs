@@ -1,0 +1,118 @@
+<html>
+<head>
+<style>
+.match {
+  background: lightgreen;
+}
+.nomatch {
+  background: red;
+}
+</style>
+<script src="/c0.js"></script>
+<script src="/nuron.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.3/web3.min.js"></script>
+<script>
+var c0 = new C0()
+const config = {
+  key: "m'/44'/60'/0'/0/0",
+  workspace: "web_test",
+  domain: {
+    "address":"0x93f4f1e0dca38dd0d35305d57c601f829ee53b51",
+    "chainId":4,
+    "name":"_test_"
+  }
+}
+var nuron = new Nuron(config)
+document.addEventListener("DOMContentLoaded", async () => {
+  await c0.init({ web3: new Web3(window.ethereum) })
+
+  // c0.token.create() and nuron.token.create() should be isomorphic
+  document.querySelector("#create").addEventListener("click", async (e) => {
+    let cid = await c0.util.cid("XXXXXXX")
+    let c0token = await c0.token.create({
+      domain: config.domain,
+      body: {
+        cid: cid
+      }
+    })
+    let nurontoken = await nuron.token.create({
+      cid: cid
+    })
+    document.querySelector("#create .c0").innerHTML = c0.util.stringify(c0token, null, 2)
+    document.querySelector("#create .nuron").innerHTML = c0.util.stringify(nurontoken, null, 2)
+    let matches = (c0.util.stringify(nurontoken, null, 2) === c0.util.stringify(c0token, null, 2))
+    document.querySelector("#create").className = (matches ? "match" : "nomatch")
+    document.querySelector("#create .result").innerHTML = matches
+  })
+  // c0.token.build() and nuron.token.build() should be isomorphic
+  document.querySelector("#build").addEventListener("click", async (e) => {
+    let cid = await c0.util.cid("XXXXXXX")
+    let c0token = await c0.token.build({
+      domain: config.domain,
+      body: {
+        cid: cid
+      }
+    })
+    let nurontoken = await nuron.token.build({
+      cid: cid
+    })
+    document.querySelector("#build .c0").innerHTML = c0.util.stringify(c0token, null, 2)
+    document.querySelector("#build .nuron").innerHTML = c0.util.stringify(nurontoken, null, 2)
+    let matches = (c0.util.stringify(nurontoken, null, 2) === c0.util.stringify(c0token, null, 2))
+    document.querySelector("#build").className = (matches ? "match" : "nomatch")
+    document.querySelector("#build .result").innerHTML = matches
+  })
+  // c0.token.sign() and nuron.token.sign() should be isomorphic
+  document.querySelector("#sign").addEventListener("click", async (e) => {
+    let cid = await c0.util.cid("XXXXXXX")
+    let c0UnsignedToken = await c0.token.build({
+      domain: config.domain,
+      body: {
+        cid: cid
+      }
+    })
+
+    let c0SignedToken = await c0.token.sign(c0UnsignedToken)
+    let nuronSignedToken = await nuron.token.sign(c0UnsignedToken)
+
+    document.querySelector("#sign .c0").innerHTML = c0.util.stringify(c0SignedToken, null, 2)
+    document.querySelector("#sign .nuron").innerHTML = c0.util.stringify(nuronSignedToken, null, 2)
+    let matches = (c0.util.stringify(nuronSignedToken, null, 2) === c0.util.stringify(c0SignedToken, null, 2))
+    document.querySelector("#sign").className = (matches ? "match" : "nomatch")
+    document.querySelector("#sign .result").innerHTML = matches
+  })
+})
+</script>
+</head>
+<body>
+<table>
+  <tr id='create'>
+    <td>token.create()</td>
+    <td><button id='create'>create</button></td>
+    <td>
+      <pre class='c0'></pre>
+      <pre class='nuron'></pre>
+    </td>
+    <td class='result'></td>
+  </tr>
+  <tr id='build'>
+    <td>token.build()</td>
+    <td><button id='create'>build</button></td>
+    <td>
+      <pre class='c0'></pre>
+      <pre class='nuron'></pre>
+    </td>
+    <td class='result'></td>
+  </tr>
+  <tr id='sign'>
+    <td>token.sign()</td>
+    <td><button id='create'>sign</button></td>
+    <td>
+      <pre class='c0'></pre>
+      <pre class='nuron'></pre>
+    </td>
+    <td class='result'></td>
+  </tr>
+</table>
+</body>
+</html>

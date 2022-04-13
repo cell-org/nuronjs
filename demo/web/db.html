@@ -1,0 +1,175 @@
+<html>
+<head>
+<style>
+body {
+  margin: 0;
+}
+form {
+  margin: 0;
+}
+.match {
+  background: lightgreen;
+}
+.nomatch {
+  background: red;
+}
+.hidden {
+  display: none;
+}
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  background: whitesmoke;
+  justify-content: center;
+}
+.container .item {
+  width: 150px;
+  margin: 10px;
+  background: white;
+  padding: 10px;
+}
+.item img {
+  width: 100%;
+}
+h4 {
+  margin: 0 0 10px;
+}
+.item img {
+  width: 100%;
+}
+nav {
+  padding: 10px;
+  background: whitesmoke;
+  text-align: center;
+}
+nav input[type=text] {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid rgba(0,0,0,0.4);
+
+}
+nav input[type=submit] {
+  padding: 10px;
+  border: none;
+  background: royalblue;
+  color: white;
+}
+.generated {
+  background: whitesmoke;
+  text-align: center;
+}
+.generated img {
+  width: 150px;
+}
+</style>
+<script src="/c0.js"></script>
+<script src="/nuron.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.3/web3.min.js"></script>
+<script>
+const config = {
+  key: "m'/44'/60'/0'/0/0",
+  workspace: "web_test2",
+  domain: {
+    "address":"0x93f4f1e0dca38dd0d35305d57c601f829ee53b51",
+    "chainId":4,
+    "name":"_test_"
+  }
+}
+var c0 = new C0()
+var nuron = new Nuron(config)
+const debounce = (callback, wait) => {
+  let timeout;
+  return (...args) => {
+      const context = this;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => callback.apply(context, args), wait);
+  };
+}
+document.addEventListener("DOMContentLoaded", async () => {
+  await c0.init({ web3: new Web3(window.ethereum) })
+
+  // DB: read all tokens and render them
+  let tokens = await nuron.db.read("token", {
+    select: ["token.cid", "metadata.name", "metadata.image"],
+    join: ["metadata", "metadata.self", "token.cid"],
+    order: ["created_at", "desc"]
+  })
+  let html = tokens.map((token) => {
+    return `<div class='item'>
+<h4>${token.name}</h4>
+<img src="${token.image}">
+</div>`
+  }).join("")
+  document.querySelector(".container").innerHTML = html
+
+
+
+  // When typing into the input field, automatically fetch the generative SVG for the input seed and display them
+  document.querySelector("#seed").addEventListener("input", debounce(async (e) => {
+    let seed = document.querySelector("#seed").value
+    let svg = await fetch(`https://avatars.dicebear.com/api/croodles/${seed}.svg`).then((r) => {
+      return r.text()
+    })
+    console.log("svg", svg)
+    document.querySelector("#svg").src = "data:image/svg+xml;base64," + btoa(svg)
+    document.querySelector("#svg").dataset.svg = svg
+    document.querySelector("#svg").dataset.name = seed
+    document.querySelector(".generated").classList.remove("hidden")
+  }, 300))
+
+
+  // When submitting,
+  // 1. Write the SVG to the fs
+  // 2. Write the metadata to the fs
+  // 3. Create an NFT from the metadata
+  document.querySelector("form").addEventListener("submit", async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    // 1. Write SVG to the FS
+    let svg = document.querySelector("#svg").dataset.svg
+    let name = document.querySelector("#svg").dataset.name
+    let svgURI = document.querySelector("#svg").src
+    let svgcid = await nuron.fs.write(svg)
+
+    // 2. Write the metadata to the FS
+    let metadata = {
+      name: name,
+      image: svgURI
+    }
+    let metadatacid = await nuron.fs.write(metadata)
+
+    // 3. Write the metadata to the DB
+    await nuron.db.write("metadata", metadata)
+
+    // 4. Create a token
+    let token = await nuron.token.create({
+      cid: metadatacid
+    })
+
+    // 5. Write the token to the FS
+    let tokencid = await nuron.fs.write(token)
+
+    // 6. Write the token to the DB
+    await nuron.db.write("token", token)
+
+    // 7. Reload the page => should render the reflected state
+    location.href = location.href
+  })
+})
+</script>
+</head>
+<body>
+<nav>
+  <form>
+    <input type='text' id='seed' placeholder="type any seed string for generating SVG">
+    <input type='submit' value='create'>
+  </form>
+</nav>
+<div class='generated hidden'>
+  <img id='svg'>
+</div>
+<div class='container'></div>
+</body>
+</html>
