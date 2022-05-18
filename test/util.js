@@ -1,4 +1,4 @@
-const Nuron = require('nuron')
+const Nuron = require('nurond')
 const path = require('path');
 const fs = require('fs');
 const nurond = async () => {
