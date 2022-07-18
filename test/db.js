@@ -93,7 +93,7 @@ describe("db", () => {
       let cid = await c0.util.cid(buf)
       let token = await nuron.token.create({
         cid: cid,
-        price: i
+        value: i
       })
       await nuron.db.write("token", token)
       console.log("token", token)
@@ -104,10 +104,10 @@ describe("db", () => {
     console.log("tokens", tokens)
     expect(tokens.length).to.equal(10)
 
-    // get tokesn with price greater than 5
+    // get tokesn with value greater than 5
     tokens = await nuron.db.read("token", {
       select: ["*"],
-      where: ["price", ">", 5]
+      where: ["value", ">", 5]
     })
     console.log("tokens", tokens)
     expect(tokens.length).to.equal(4)
@@ -129,7 +129,7 @@ describe("db", () => {
       let cid = await c0.util.cid(buf)
       let token = await nuron.token.create({
         cid: cid,
-        price: i
+        value: i
       })
       await nuron.db.write("token", token)
       console.log("token", token)
@@ -159,7 +159,7 @@ describe("db", () => {
       let cid = await c0.util.cid(buf)
       let token = await nuron.token.create({
         cid: cid,
-        price: i
+        value: i
       })
       await nuron.db.write("token", token)
       console.log("token", token)
@@ -170,7 +170,7 @@ describe("db", () => {
     expect(tokens.length).to.equal(10)
 
     // get all => 10 items
-    await nuron.db.rm("token", ["price", "<", 5])
+    await nuron.db.rm("token", ["value", "<", 5])
 
     tokens = await nuron.db.read("token", {})
     console.log("tokens", tokens)

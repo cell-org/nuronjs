@@ -270,7 +270,6 @@ describe("fs", () => {
     try {
       let cid = await nuron.fs.pin()
     } catch (e) {
-      console.log(e)
       expect(e.message).to.equal("cid required")
     }
   })

@@ -1,6 +1,6 @@
 {
   "name": "nuronjs",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "dependencies": {
     "cross-fetch": "^3.1.5",
     "form-data": "^4.0.0",
@@ -15,14 +15,14 @@
   "license": "MIT",
   "description": "",
   "devDependencies": {
-    "nurond": "^0.0.16",
+    "nurond": "^0.0.45",
     "@dicebear/avatars": "^4.10.2",
     "@dicebear/big-ears": "^4.10.2",
     "@dicebear/croodles": "^4.10.2",
     "@dicebear/open-peeps": "^4.10.2",
     "assert": "^2.0.0",
     "axios": "^0.26.0",
-    "c0js": "^0.0.46",
+    "c0js": "^0.1.22",
     "chai": "^4.3.6",
     "crypto-browserify": "^3.12.0",
     "dotenv": "^16.0.0",
